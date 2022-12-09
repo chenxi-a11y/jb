@@ -1,6 +1,14 @@
 # 工具备份
 
-**1.bbr** [查看](https://github.com/chenxi-a11y/jb/tree/main/bbr)
+**1.bbr备份** [查看](https://github.com/chenxi-a11y/jb/tree/main/bbr)
+
+<br>
+
+**工具箱**
+
+```
+wget -N https://raw.githubusercontent.com/misaka-gh/MisakaLinuxToolbox/master/MisakaToolbox.sh &&  chmod +x MisakaToolbox.sh && bash MisakaToolbox.sh
+```
 
 <br>
 
