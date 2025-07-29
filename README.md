@@ -1,3 +1,14 @@
+**komari-agent无root运行**
+禁用远程控制 禁用自动更新 监测可用内存
+```
+bash <(curl -sL https://raw.githubusercontent.com/chenxi-a11y/jb/main/install_modified.sh) -e 面板地址 -t 通信密码 --disable-web-ssh --disable-auto-update --memory-mode-available
+```
+
+**komari-agent管理卸载脚本**
+```
+bash <(curl -sL https://raw.githubusercontent.com/chenxi-a11y/jb/main/komari-agent-menu.sh)
+```
+
 # 工具备份
 
 **1.bbr备份** [查看](https://github.com/chenxi-a11y/jb/tree/main/bbr)
