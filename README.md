@@ -1,6 +1,6 @@
 **同步北京时间（chrony）**
 ```
-wget -N https://raw.githubusercontent.com/chenxi-a11y/jb/main/setup_chrony.sh && chmod +x setup_chrony.sh && bash setup_chrony.sh
+wget -N https://raw.githubusercontent.com/chenxi-a11y/jb/main/docs/setup_chrony.sh && chmod +x setup_chrony.sh && bash setup_chrony.sh
 ```
 
 
