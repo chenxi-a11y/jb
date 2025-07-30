@@ -6,6 +6,7 @@ wget -N https://raw.githubusercontent.com/chenxi-a11y/jb/main/docs/setup_chrony.
 
 **komari-agent无root运行**
 禁用远程控制 禁用自动更新 监测可用内存
+自动检测并安装 vnstat 依赖
 ```
 bash <(curl -sL https://raw.githubusercontent.com/chenxi-a11y/jb/main/install_modified.sh) -e 面板地址 -t 通信密码 --disable-web-ssh --disable-auto-update --memory-mode-available
 ```
