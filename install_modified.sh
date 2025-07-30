@@ -174,11 +174,116 @@ uninstall_previous() {
     fi
 }
 
+# Function to install vnstat
+install_vnstat() {
+    log_step "Checking for vnstat installation..."
+    
+    if command -v vnstat >/dev/null 2>&1; then
+        log_success "vnstat is already installed"
+        return 0
+    fi
+    
+    log_info "vnstat not found, installing..."
+    
+    # Install vnstat based on package manager
+    if command -v apt >/dev/null 2>&1; then
+        log_info "Installing vnstat using apt..."
+        apt update
+        apt install -y vnstat
+    elif command -v yum >/dev/null 2>&1; then
+        log_info "Installing vnstat using yum..."
+        yum install -y vnstat
+    elif command -v dnf >/dev/null 2>&1; then
+        log_info "Installing vnstat using dnf..."
+        dnf install -y vnstat
+    elif command -v zypper >/dev/null 2>&1; then
+        log_info "Installing vnstat using zypper..."
+        zypper install -y vnstat
+    elif command -v pacman >/dev/null 2>&1; then
+        log_info "Installing vnstat using pacman..."
+        pacman -S --noconfirm vnstat
+    elif command -v apk >/dev/null 2>&1; then
+        log_info "Installing vnstat using apk..."
+        apk add vnstat
+    elif command -v brew >/dev/null 2>&1; then
+        log_info "Installing vnstat using Homebrew..."
+        brew install vnstat
+    elif command -v opkg >/dev/null 2>&1; then
+        log_info "Installing vnstat using opkg (OpenWrt)..."
+        opkg update
+        opkg install vnstat
+    else
+        log_error "No supported package manager found for vnstat installation"
+        log_error "Please install vnstat manually: apt/yum/dnf/zypper/pacman/apk/brew/opkg"
+        exit 1
+    fi
+    
+    # Verify vnstat installation
+    if ! command -v vnstat >/dev/null 2>&1; then
+        log_error "Failed to install vnstat"
+        exit 1
+    fi
+    
+    log_success "vnstat installed successfully"
+    
+    # Initialize vnstat database and start service if needed
+    log_info "Configuring vnstat..."
+    
+    # Create vnstat user if it doesn't exist (some distributions need this)
+    if ! id -u vnstat >/dev/null 2>&1; then
+        if command -v useradd >/dev/null 2>&1; then
+            useradd --system --no-create-home --shell /usr/sbin/nologin vnstat 2>/dev/null || true
+        fi
+    fi
+    
+    # Try to start vnstat service/daemon if available
+    if command -v systemctl >/dev/null 2>&1; then
+        if systemctl list-unit-files | grep -q "vnstat.service"; then
+            systemctl enable vnstat.service 2>/dev/null || true
+            systemctl start vnstat.service 2>/dev/null || true
+            log_info "vnstat systemd service enabled and started"
+        fi
+    elif command -v rc-service >/dev/null 2>&1; then
+        if [ -f "/etc/init.d/vnstat" ]; then
+            rc-update add vnstat default 2>/dev/null || true
+            rc-service vnstat start 2>/dev/null || true
+            log_info "vnstat OpenRC service enabled and started"
+        fi
+    elif [ "$os_name" = "darwin" ]; then
+        # On macOS, vnstat typically runs as needed, no persistent service required
+        log_info "vnstat configured for macOS (runs on-demand)"
+    fi
+    
+    # Initialize database for network interfaces
+    log_info "Initializing vnstat database for network interfaces..."
+    
+    # Get network interfaces (excluding loopback)
+    interfaces=$(ip link show 2>/dev/null | grep -E '^[0-9]+:' | grep -v 'lo:' | awk -F': ' '{print $2}' | awk '{print $1}' | head -5)
+    
+    # Fallback for systems without ip command
+    if [ -z "$interfaces" ] && [ -d "/sys/class/net" ]; then
+        interfaces=$(ls /sys/class/net | grep -v lo | head -5)
+    fi
+    
+    # Initialize database for each interface
+    for interface in $interfaces; do
+        if [ -n "$interface" ]; then
+            vnstat -i "$interface" --create 2>/dev/null || true
+            log_info "Initialized vnstat database for interface: $interface"
+        fi
+    done
+    
+    log_success "vnstat configuration completed"
+}
+
 # Uninstall previous installation
 uninstall_previous
 
+# Install vnstat first
+install_vnstat
+
 install_dependencies() {
-    log_step "Checking and installing dependencies..."
+    log_step "Checking and installing other dependencies..."
 
     local deps="curl"
     local missing_deps=""
@@ -509,4 +614,5 @@ else
 fi
 log_config "Service: ${GREEN}$service_name${NC}"
 log_config "Arguments: ${GREEN}$komari_args${NC}"
+log_success "vnstat has been installed and configured!"
 echo -e "${WHITE}===========================================${NC}"
